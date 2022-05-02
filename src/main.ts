@@ -14,7 +14,7 @@ const engine = Engine.create();
 engine.gravity.scale = 0.0009;
 const world = engine.world;
 
-const canvasContainer = document.getElementById('headerEffectCanvas') || null;
+const canvasContainer = document.getElementById('app') || null;
 
 const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
@@ -38,21 +38,31 @@ if (canvasContainer) {
   });
 
   const particles: any = [];
+
   const updateParticles = function () {
+    const halfParticle = render.canvas.width / 2;
     const particleOptions = {
-      count: render.canvas.width * render.canvas.height * 0.00005 + 30,
+      count: render.canvas.width * render.canvas.height * 0.00005 + 100,
       size: {
-        min: 50,
-        max: 100
+        // min: 50,
+        // max: 100
+        min: Matter.Common.random(0.03, 0.08) * render.canvas.width,
+        max:
+          Matter.Common.random(0.08, 0.1) * render.canvas.width +
+            render.canvas.width <=
+          1024
+            ? 100
+            : (halfParticle / render.canvas.width) * 100
       },
       bounce: 1.1
     };
 
     for (let i = 0; i < particleOptions.count; i++) {
+      const c = get_random_color();
       const x = Matter.Common.random(-render.canvas.width, render.canvas.width);
       const y = Matter.Common.random(
         -render.canvas.height,
-        render.canvas.height / 3
+        render.canvas.height / 5
       );
       const size = Matter.Common.random(
         particleOptions.size.min,
@@ -60,8 +70,9 @@ if (canvasContainer) {
       );
       const p = Bodies.rectangle(x, y, size, size, {
         restitution: particleOptions.bounce,
-        render: { fillStyle: get_random_color() },
-        frictionAir: Common.random(0.003, 0.1)
+        render: { fillStyle: c },
+        frictionAir: Common.random(0.003, 0.1),
+        mass: 0.01
       });
       Matter.Body.setVelocity(p, { x: 0, y: Matter.Common.random(1, 10) });
       particles.push(p);
@@ -122,13 +133,22 @@ if (canvasContainer) {
     particles.forEach((p: any) => {
       if (p.position.y > render.canvas.height) {
         Matter.Body.setVelocity(p, { x: 0, y: Matter.Common.random(1, 30) });
+
         const x = Matter.Common.random(
-          render.canvas.width / 5,
-          render.canvas.width / 1.2
+          -render.canvas.width,
+          render.canvas.width
         );
-        const y = Matter.Common.random(-render.canvas.height, 0);
+        const y = Matter.Common.random(
+          -render.canvas.height,
+          render.canvas.height / 5
+        );
         Matter.Body.setPosition(p, { x: x, y: y });
       }
     });
   });
+} else {
+  document.body.innerHTML = `
+  <h1>Hello Vite!</h1>
+  <a href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
+`;
 }
